@@ -1,0 +1,80 @@
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" character varying(150) NOT NULL,
+    "ProductVersion" character varying(32) NOT NULL,
+    CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+);
+
+CREATE TABLE "Posts" (
+    "Id" text NOT NULL,
+    "CreatedOn" timestamp without time zone NOT NULL,
+    "CreatedBy" text NULL,
+    "UpdatedBy" text NULL,
+    "DeletedBy" text NULL,
+    "UpdatedOn" timestamp without time zone NULL,
+    "DeletedOn" timestamp without time zone NULL,
+    "IsActive" boolean NOT NULL,
+    "IsDeleted" boolean NOT NULL,
+    "Content" text NULL,
+    "UserId" text NULL,
+    "AccessibleBy" integer NOT NULL,
+    CONSTRAINT "PK_Posts" PRIMARY KEY ("Id")
+);
+
+CREATE TABLE "PostComments" (
+    "Id" text NOT NULL,
+    "CreatedOn" timestamp without time zone NOT NULL,
+    "CreatedBy" text NULL,
+    "UpdatedBy" text NULL,
+    "DeletedBy" text NULL,
+    "UpdatedOn" timestamp without time zone NULL,
+    "DeletedOn" timestamp without time zone NULL,
+    "IsActive" boolean NOT NULL,
+    "IsDeleted" boolean NOT NULL,
+    "PostId" text NULL,
+    "Content" text NULL,
+    "UserId" text NULL,
+    CONSTRAINT "PK_PostComments" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_PostComments_Posts_PostId" FOREIGN KEY ("PostId") REFERENCES "Posts" ("Id") ON DELETE RESTRICT
+);
+
+CREATE TABLE "PostFiles" (
+    "Id" text NOT NULL,
+    "CreatedOn" timestamp without time zone NOT NULL,
+    "CreatedBy" text NULL,
+    "UpdatedBy" text NULL,
+    "DeletedBy" text NULL,
+    "UpdatedOn" timestamp without time zone NULL,
+    "DeletedOn" timestamp without time zone NULL,
+    "IsActive" boolean NOT NULL,
+    "IsDeleted" boolean NOT NULL,
+    "PostId" text NULL,
+    "Url" text NULL,
+    "FileType" text NULL,
+    CONSTRAINT "PK_PostFiles" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_PostFiles_Posts_PostId" FOREIGN KEY ("PostId") REFERENCES "Posts" ("Id") ON DELETE RESTRICT
+);
+
+CREATE TABLE "PostLikes" (
+    "Id" text NOT NULL,
+    "CreatedOn" timestamp without time zone NOT NULL,
+    "CreatedBy" text NULL,
+    "UpdatedBy" text NULL,
+    "DeletedBy" text NULL,
+    "UpdatedOn" timestamp without time zone NULL,
+    "DeletedOn" timestamp without time zone NULL,
+    "IsActive" boolean NOT NULL,
+    "IsDeleted" boolean NOT NULL,
+    "PostId" text NULL,
+    "UserId" text NULL,
+    CONSTRAINT "PK_PostLikes" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_PostLikes_Posts_PostId" FOREIGN KEY ("PostId") REFERENCES "Posts" ("Id") ON DELETE RESTRICT
+);
+
+CREATE INDEX "IX_PostComments_PostId" ON "PostComments" ("PostId");
+
+CREATE INDEX "IX_PostFiles_PostId" ON "PostFiles" ("PostId");
+
+CREATE INDEX "IX_PostLikes_PostId" ON "PostLikes" ("PostId");
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20200402230412_initialCreate', '3.1.3');
