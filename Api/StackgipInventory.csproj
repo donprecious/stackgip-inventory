@@ -8,35 +8,7 @@
   </PropertyGroup>
 
 
-  <ItemGroup>
-    <Compile Remove="Data\NewFolder\**" />
-    <Compile Remove="Factories\**" />
-    <Content Remove="Data\NewFolder\**" />
-    <Content Remove="Factories\**" />
-    <EmbeddedResource Remove="Data\NewFolder\**" />
-    <EmbeddedResource Remove="Factories\**" />
-    <None Remove="Data\NewFolder\**" />
-    <None Remove="Factories\**" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20200517051329_added code to questiontype.cs" />
-    <Compile Remove="Migrations\20200517051329_added code to questiontype.Designer.cs" />
-    <Compile Remove="Migrations\20200521183948_add-code-questionType.cs" />
-    <Compile Remove="Migrations\20200521183948_add-code-questionType.Designer.cs" />
-    <Compile Remove="Migrations\20200529070337_add-applicationid-to-applicationoption.cs" />
-    <Compile Remove="Migrations\20200529070337_add-applicationid-to-applicationoption.Designer.cs" />
-    <Compile Remove="Migrations\20200529105735_added-sector-n-subsector.cs" />
-    <Compile Remove="Migrations\20200529105735_added-sector-n-subsector.Designer.cs" />
-    <Compile Remove="Migrations\20200601153839_added-teststartdate-to-applicant.cs" />
-    <Compile Remove="Migrations\20200601153839_added-teststartdate-to-applicant.Designer.cs" />
-    <Compile Remove="Migrations\20200612061345_addedScoresColums.cs" />
-    <Compile Remove="Migrations\20200612061345_addedScoresColums.Designer.cs" />
-    <Compile Remove="Migrations\20200613103942_testing.cs" />
-    <Compile Remove="Migrations\20200613103942_testing.Designer.cs" />
-    <Compile Remove="Migrations\20200614105728_increase string length for content for options and question.cs" />
-    <Compile Remove="Migrations\20200614105728_increase string length for content for options and question.Designer.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="secret.example.json" />
@@ -74,7 +46,7 @@
     <PackageReference Include="Refit" Version="5.1.67" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.3.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
-    <!--<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.3" />-->
+
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.1.1" />
     <PackageReference Include="X.PagedList" Version="8.0.5" />
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.1" />
