@@ -24,6 +24,7 @@ using StackgipInventory.Filters;
 using StackgipInventory.Helpers;
 using StackgipInventory.Providers;
 using StackgipInventory.Providers.Emailing;
+using StackgipInventory.Repository;
 using StackgipInventory.Repository.Generic;
 using StackgipInventory.Services;
 using StackgipInventory.Services.Identity;
@@ -46,6 +47,10 @@ namespace StackgipInventory
             services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(connStr));
             services.AddScoped<IConfig, Config.Config>();
             services.AddScoped<IIdentityConfig, IdentityConfig>();
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("MSSql.Connection")));
 
             services.AddControllers().AddNewtonsoftJson(options =>
             {
@@ -113,7 +118,11 @@ namespace StackgipInventory
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IUserService, UserService>();
 
-             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddScoped<IProductInventoryRepository, ProductInventoryRepository>();
+            services.AddScoped<ICustomerOrderRepository, CustomerOrderRepository>();
+            services.AddScoped<IOrderLogRepository, OrderLogRepository>();
 
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailSender, EmailSender>();

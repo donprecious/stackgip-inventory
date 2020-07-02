@@ -14,6 +14,7 @@ namespace StackgipInventory.Repository.Generic
         IQueryable<TEntity> Query(Expression<Func<TEntity, bool>> where);
         Task<TEntity> Get(Expression<Func<TEntity, bool>> where);
         Task<IList<TEntity>> GetAll(Expression<Func<TEntity, bool>> where);
+        Task<TEntity> GetById(int id);
         IQueryable<TEntity> Query();
         Task Create(TEntity entity);
         Task Add(TEntity entity);
