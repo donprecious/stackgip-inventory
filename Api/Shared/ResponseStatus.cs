@@ -1,8 +1,10 @@
-﻿namespace StackgipInventory.Shared
+﻿using System.Reflection.Metadata;
+
+namespace StackgipInventory.Shared
 {
-    public class ResponseStatus
+    public static class ResponseStatus
     {
-            public static string Success = "success", Fail = "fail";
+            public const string Success = "success", Fail = "fail";
 
     }
 }

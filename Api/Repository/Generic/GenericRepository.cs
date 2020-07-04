@@ -14,7 +14,7 @@ namespace StackgipInventory.Repository.Generic
     public class GenericRepository<TEntity> : IGenericRepository<TEntity>
         where TEntity : Entity
     {
-        private readonly ApplicationDbContext _dbContext;
+        protected readonly ApplicationDbContext _dbContext;
      
 
         public GenericRepository(ApplicationDbContext dbContext)
@@ -37,8 +37,15 @@ namespace StackgipInventory.Repository.Generic
                 .Where(where).ToListAsync();
         }
 
+        public async Task<TEntity> GetById(int id)
+        {
+            return await _dbContext.Set<TEntity>()
+                .FindAsync(id);
+        }
+
         public async Task Create(TEntity entity)
         {
+            entity.CreatedOn = DateTime.UtcNow;
             await _dbContext.Set<TEntity>().AddAsync(entity);
         }
 
