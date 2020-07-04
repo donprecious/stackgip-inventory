@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using StackgipEcommerce.Dto;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using StackgipInventory.Dto;
+using StackgipInventory.Shared;
 
 namespace StackgipEcommerce.Shared
 {
@@ -51,6 +53,15 @@ namespace StackgipEcommerce.Shared
             {
                 Data = null, 
                 Status = ResponseStatus.Success, 
+                Message = message,
+            };
+        }
+        public static ResponseDto Error(string message = "An error occured while handling your request.")
+        {
+            return new ResponseDto()
+            {
+                Data = null,
+                Status = ResponseStatus.Fail,
                 Message = message,
             };
         }

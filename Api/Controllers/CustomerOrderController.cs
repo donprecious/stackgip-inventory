@@ -9,14 +9,17 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using Newtonsoft.Json;
+using StackgipEcommerce.Shared;
+using StackgipInventory.Dto;
 using StackgipInventory.Dto.CustomerOrder;
 using StackgipInventory.Entities;
 using StackgipInventory.Enums;
 using StackgipInventory.Repository;
+using StackgipInventory.Shared;
 
 namespace StackgipInventory.Controllers
 {
-    [Route("api/orders")]
+    [Route("api/v1/orders")]
     [ApiController]
     public class CustomerOrderController : Controller
     {
@@ -33,51 +36,33 @@ namespace StackgipInventory.Controllers
             _mapper = mapper;
         }
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetOrder(int userId)
+        public async Task<ResponseDto> GetOrder(int userId)
         {
-            try
-            {
-                var customerOrders = await _customerOrderRepository.Get(userId);
-                if (customerOrders == null)
-                    return NotFound();
+            var customerOrders = await _customerOrderRepository.Get(userId);
+            if (customerOrders == null)
+                return Responses.NotFound();
 
-                var mapped = _mapper.Map<IEnumerable<GetCustomerOrderDto>>(customerOrders);
-                return Ok(mapped);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
+            var mapped = _mapper.Map<IEnumerable<GetCustomerOrderDto>>(customerOrders);
+            return Responses.Ok(mapped);
         }
         [HttpGet]
-        public async Task<IActionResult> GetOrders()
+        public async Task<ResponseDto> GetOrders()
         {
-            try
-            {
-                var customerOrders =  _customerOrderRepository.GetAll();
-                var mapped = _mapper.Map<IEnumerable<GetCustomerOrderDto>>(customerOrders);
-                return Ok(mapped);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            } 
+            var customerOrders =  _customerOrderRepository.GetAll();
+            var mapped = _mapper.Map<IEnumerable<GetCustomerOrderDto>>(customerOrders);
+            return Responses.Ok(mapped);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateCustomerOrderDto createCustomerOrderDto)
+        public async Task<ResponseDto> CreateOrder([FromBody] CreateCustomerOrderDto createCustomerOrderDto)
         {
             var productInventory = await _productInventoryRepository.Get(createCustomerOrderDto.ProductId);
 
             if (productInventory == null)
-                return NotFound();
+                return Responses.NotFound();
 
             if(productInventory.AvailableUnit < createCustomerOrderDto.Unit)
             {
-                var response = new { message = "out of stock", status = "failed", code = "OUT_OF_STOCK" };
-                return Ok(response);
+                return Responses.Ok(null, ResponseStatus.Fail, "out of stock");
             }
 
             var customerOrder = _mapper.Map<CustomerOrder>(createCustomerOrderDto);
@@ -85,11 +70,11 @@ namespace StackgipInventory.Controllers
             await _customerOrderRepository.Create(customerOrder);
             var saveCustomerOrderChanges = await _customerOrderRepository.Save();
             if (!saveCustomerOrderChanges)
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error(); 
 
             var saveOrderLogChanges = await CreateOrderLog(customerOrder.CustomerId, Operation.ORDER_RECEIVED.ToString());
             if (!saveOrderLogChanges)
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
 
             productInventory.AvailableUnit = productInventory.AvailableUnit - createCustomerOrderDto.Unit;
 
@@ -97,12 +82,10 @@ namespace StackgipInventory.Controllers
 
             var saveProductInventoryChanges = await _productInventoryRepository.Save();
             if (!saveProductInventoryChanges)
-                return StatusCode(500, "An error occured while handling your request.");
-
-
+                return Responses.Error();
 
             var customerOrderCreated = _mapper.Map<GetCustomerOrderDto>(customerOrder);
-            return Ok(customerOrderCreated);
+            return Responses.Ok(customerOrderCreated);
         }
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<bool> UpdateRemoteService(int productId, decimal availableUnit) 
@@ -126,22 +109,22 @@ namespace StackgipInventory.Controllers
             return success;
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomerOrder(int id)
+        public async Task<ResponseDto> DeleteCustomerOrder(int id)
         {
             var customerOrder = await _customerOrderRepository.GetById(id);
             if (customerOrder == null)
-                return NotFound();
+                return Responses.NotFound();
 
             await _customerOrderRepository.SoftDelete(customerOrder);
             var saveChanges = await _customerOrderRepository.Save();
             if (!saveChanges)
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
      
             var saveOrderLogChanges = await CreateOrderLog(customerOrder.CustomerId, Operation.ORDER_CANCELLED.ToString());
             if (!saveOrderLogChanges)
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
 
-            return NoContent();
+            return Responses.Delete("Resources deleted.");
         }
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<bool> CreateOrderLog(int customerId, string operation)

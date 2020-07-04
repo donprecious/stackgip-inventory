@@ -5,9 +5,12 @@ using System.Security.Policy;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using StackgipEcommerce.Shared;
+using StackgipInventory.Dto;
 using StackgipInventory.Dto.ProductInventory;
 using StackgipInventory.Entities;
 using StackgipInventory.Repository;
+using StackgipInventory.Shared;
 
 namespace StackgipInventory.Controllers
 {
@@ -23,34 +26,25 @@ namespace StackgipInventory.Controllers
             _mapper = mapper;
         }
         [HttpGet("{productId}")]
-        public async Task<IActionResult> GetProductInventory(int productId)
+        public async Task<ResponseDto> GetProductInventory(int productId)
         {
-            try
-            {
-                var productInventory = await _productInventoryRepository.Get(productId);
+            var productInventory = await _productInventoryRepository.Get(productId);
 
-                if (productInventory == null)
-                    return NotFound();
+            if (productInventory == null)
+                return Responses.NotFound();
 
-                var mapped = _mapper.Map<GetProductInventoryDto>(productInventory);
-                return Ok(mapped);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
+            var mapped = _mapper.Map<GetProductInventoryDto>(productInventory);
+            return Responses.Ok(mapped);
         }
         [HttpGet]
-        public IActionResult GetProductInventories()
+        public ResponseDto GetProductInventories()
         {
             var productInventories = _productInventoryRepository.GetAll();
             var mappedList = _mapper.Map<List<GetProductInventoryDto>>(productInventories);
-            return Ok(mappedList);
+            return Responses.Ok(mappedList);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateProductInventory([FromBody] 
+        public async Task<ResponseDto> CreateProductInventory([FromBody] 
             CreateProductInventoryDto createProductInventoryDto)
         {
             var productInventory = _mapper.Map<ProductInventory>(createProductInventoryDto);
@@ -58,19 +52,19 @@ namespace StackgipInventory.Controllers
             var saveChanges = await _productInventoryRepository.Save();
             if (!saveChanges)
             {
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
             }
             var productInventoryCreated = _mapper.Map<GetProductInventoryDto>(productInventory);
-            return Ok(productInventoryCreated);
+            return Responses.Ok(productInventoryCreated);
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateProductInventory(int productId, 
+        public async Task<ResponseDto> UpdateProductInventory(int productId, 
             [FromBody] UpdateProductInventoryDto updateProductInventoryDto)
         {
             var productInventory = await _productInventoryRepository.Get(productId);
             if (productInventory == null)
             {
-                return NotFound();
+                return Responses.NotFound();
             }
             if (updateProductInventoryDto.AvailableUnit != 0)
             {
@@ -89,25 +83,25 @@ namespace StackgipInventory.Controllers
             var saveChanges = await _productInventoryRepository.Save();
             if (!saveChanges)
             {
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
             }
-            return NoContent();
+            return Responses.Ok(productInventory,ResponseStatus.Success,"Resource updated.");
         }
         [HttpDelete("{productId}")]
-        public async Task<IActionResult> DeleteProductInventory(int productId)
+        public async Task<ResponseDto> DeleteProductInventory(int productId)
         {
             var productInventory = await _productInventoryRepository.Get(productId);
             if (productInventory == null)
             {
-                return NotFound();
+                return Responses.NotFound();
             }
             await _productInventoryRepository.SoftDelete(productInventory);
             var saveChanges = await _productInventoryRepository.Save();
             if (!saveChanges)
             {
-                return StatusCode(500, "An error occured while handling your request.");
+                return Responses.Error();
             }
-            return NoContent();
+            return Responses.Delete("Resources deleted.");
         }
     }
 }

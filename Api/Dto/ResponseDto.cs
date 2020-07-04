@@ -10,5 +10,7 @@ namespace StackgipInventory.Dto
         public string Status { get; set; }
         [JsonProperty("data")]
         public  object Data { get; set; }
+        [JsonProperty("code")]
+        public string Code { get; set; }
     }
 }
