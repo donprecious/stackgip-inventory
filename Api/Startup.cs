@@ -29,6 +29,8 @@ using StackgipInventory.Repository.Generic;
 using StackgipInventory.Services;
 using StackgipInventory.Services.Identity;
 using StackgipInventory.Services.InitilizerService;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace StackgipInventory
 {
@@ -97,6 +99,24 @@ namespace StackgipInventory
                 });
 
             services.AddAutoMapper(typeof(Startup));
+
+            // Add Hangfire services.
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration["HangfireConnection"], new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+
+            // Add the processing server as IHostedService
+            services.AddHangfireServer();
+
             services.AddMvc(o =>
             {
                 o.Filters.Add(typeof(ValidateModelAttribute));
@@ -179,6 +199,8 @@ namespace StackgipInventory
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -230,6 +252,10 @@ namespace StackgipInventory
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 
             });
+
+            app.UseStaticFiles();
+            app.UseHangfireDashboard();
+            BackgroundJob.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
         }
     }
 }
