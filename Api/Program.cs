@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace StackgipInventory
 {
@@ -11,7 +13,7 @@ namespace StackgipInventory
             var host = CreateHostBuilder(args).Build();
             await host.InitAsync();
             await host.RunAsync();
-         
+            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -19,6 +21,12 @@ namespace StackgipInventory
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                })
+          .UseNLog();
     }
 }

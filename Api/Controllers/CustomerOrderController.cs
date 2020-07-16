@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using Newtonsoft.Json;
@@ -16,6 +17,9 @@ using StackgipInventory.Entities;
 using StackgipInventory.Enums;
 using StackgipInventory.Repository;
 using StackgipInventory.Shared;
+using NLog.Web;
+using Microsoft.Extensions.Logging;
+using StackgipInventory.Data;
 
 namespace StackgipInventory.Controllers
 {
@@ -27,13 +31,16 @@ namespace StackgipInventory.Controllers
         private IProductInventoryRepository _productInventoryRepository;
         private IOrderLogRepository _orderLogRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<CustomerOrderController> _logger;
         public CustomerOrderController(ICustomerOrderRepository customerOrderRepository, IMapper mapper,
-            IProductInventoryRepository productInventoryRepository, IOrderLogRepository orderLogRepository)
+            IProductInventoryRepository productInventoryRepository, IOrderLogRepository orderLogRepository,
+            ILogger<CustomerOrderController> logger)
         {
             _customerOrderRepository = customerOrderRepository;
             _productInventoryRepository = productInventoryRepository;
             _orderLogRepository = orderLogRepository;
             _mapper = mapper;
+            _logger = logger;
         }
         [HttpGet("user/{userId}")]
         public async Task<ResponseDto> GetOrder(int userId)
@@ -78,7 +85,8 @@ namespace StackgipInventory.Controllers
 
             productInventory.AvailableUnit = productInventory.AvailableUnit - createCustomerOrderDto.Unit;
 
-            await UpdateRemoteService(productInventory.ProductId, productInventory.AvailableUnit);
+            BackgroundJob.Enqueue(() => UpdateRemoteService(productInventory.ProductId, productInventory.AvailableUnit));
+            //await UpdateRemoteService(productInventory.ProductId, productInventory.AvailableUnit);
 
             var saveProductInventoryChanges = await _productInventoryRepository.Save();
             if (!saveProductInventoryChanges)
@@ -88,7 +96,9 @@ namespace StackgipInventory.Controllers
             return Responses.Ok(customerOrderCreated);
         }
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<bool> UpdateRemoteService(int productId, decimal availableUnit) 
+        [AutomaticRetry(Attempts = 3)]
+        [LogFailure]
+        public static async Task<bool> UpdateRemoteService(int productId, decimal availableUnit) 
         {
             var message = new { unit = availableUnit};
             var success = false;
